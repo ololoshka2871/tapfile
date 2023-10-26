@@ -1,18 +1,24 @@
-use std::{io::Write, path::PathBuf};
+use std::{
+    io::{Read, Write},
+    path::PathBuf,
+};
 
 use clap::Parser;
 
+/// Convert any file to .tap format
+/// If no input file is specified, reads from stdin
+/// If no output file is specified, writes to stdout
 #[derive(Parser, Debug)]
 struct Cli {
-    /// Input file
-    input: PathBuf,
-
-    /// Output file
-    output_tap: PathBuf,
-
     /// Block size
     #[clap(short('b'), long, default_value = "65535")]
     block_size: usize,
+
+    /// Output file
+    output_tap: Option<PathBuf>,
+
+    /// Input file
+    input: Option<PathBuf>,
 }
 
 fn main() {
@@ -23,8 +29,19 @@ fn main() {
         args.input, args.output_tap, args.block_size
     );
 
-    let input = std::fs::File::open(&args.input).unwrap();
-    let mut output = std::fs::File::create(&args.output_tap).unwrap();
+    let (input, mut output): (Box<dyn Read>, Box<dyn Write>) =
+        if let Some(output) = &args.output_tap {
+            let output = Box::new(std::fs::File::create(&output).unwrap());
+            let input = args
+                .input
+                .map(|f| Box::new(std::fs::File::open(&f).unwrap()) as Box<dyn Read>)
+                .unwrap_or(Box::new(std::io::stdin()));
+            (input, output)
+        } else {
+            let output = Box::new(std::io::stdout());
+            let input = Box::new(std::io::stdin());
+            (input, output)
+        };
 
     let iterator = tapfile::TapWriter::new(input, args.block_size);
 

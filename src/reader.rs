@@ -33,6 +33,33 @@ impl<T: Read> Iterator for TapReader<T> {
 
         let header1 = u32::from_le_bytes(buf);
 
+        if header1 == HEADER_EOF {
+            // end
+            return None;
+        }
+
+        let block_size = header1 & HEADER_MASK;
+        let is_error = (header1 & (!HEADER_MASK)) != 0;
+
+        let mut data_buf = vec![0u8; block_size as usize];
+        let res = match self.reader.read(&mut data_buf) {
+            Ok(sz) => {
+                if sz != block_size as usize {
+                    return None;
+                } else {
+                    let info = BlockInfo {
+                        block_size: block_size as usize,
+                        block_number: self.block_count,
+                        is_error,
+                    };
+                    self.block_count += 1;
+
+                    Some((data_buf, info))
+                }
+            }
+            Err(_e) => return None,
+        };
+
         match self.reader.read(&mut buf) {
             Ok(sz) => {
                 if sz != std::mem::size_of::<u32>() {
@@ -45,32 +72,9 @@ impl<T: Read> Iterator for TapReader<T> {
         let header2 = u32::from_le_bytes(buf);
 
         if header1 != header2 {
-            return None;
-        } else if header1 == HEADER_EOF {
-            // end
-            return None;
+            None
         } else {
-            let block_size = header1 & HEADER_MASK;
-            let is_error = (header1 & (!HEADER_MASK)) != 0;
-
-            let mut buf = vec![0u8; block_size as usize];
-            match self.reader.read(&mut buf) {
-                Ok(sz) => {
-                    if sz != block_size as usize {
-                        return None;
-                    } else {
-                        let info = BlockInfo {
-                            block_size: block_size as usize,
-                            block_number: self.block_count,
-                            is_error,
-                        };
-                        self.block_count += 1;
-
-                        Some((buf, info))
-                    }
-                }
-                Err(_e) => None,
-            }
+            res
         }
     }
 }

@@ -28,7 +28,7 @@ mod test {
         assert_eq!(
             iterator.next(),
             Some((
-                vec![16, 0, 0, 0, 16, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                vec![16, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 16, 0, 0, 0],
                 BlockInfo {
                     block_size: 16,
                     block_number: 0,
@@ -52,7 +52,7 @@ mod test {
 
     #[test]
     fn decode() {
-        let data = vec![8, 0, 0, 0, 8, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1];
+        let data = vec![8, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 8, 0, 0, 0, 0xff, 0xff, 0xff, 0xff];
 
         let mut iterator = TapReader::new(Cursor::new(&data));
         assert_eq!(

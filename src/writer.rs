@@ -59,8 +59,8 @@ impl<T: Read> Iterator for TapWriter<T> {
                             std::mem::size_of_val(&header) * 2 + bytes_read
                         ]);
                     output_cursor.write_u32::<LittleEndian>(header).unwrap();
-                    output_cursor.write_u32::<LittleEndian>(header).unwrap();
                     output_cursor.write_all(&buf[..bytes_read]).unwrap();
+                    output_cursor.write_u32::<LittleEndian>(header).unwrap();
                     self.current_block += 1;
 
                     Some((output_cursor.into_inner(), info))
