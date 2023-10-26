@@ -20,16 +20,20 @@ struct Cli {
 fn main() {
     let args = Cli::parse();
 
-    println!("Converting {:?} to {:?}", args.input_tap, args.output);
+    eprintln!("Converting {:?} to {:?}", args.input_tap, args.output);
 
-    let (input, mut output): (Box<dyn Read>, Box<dyn Write>) = if let Some(output) = &args.output {
-        let output = Box::new(std::fs::File::create(&output).unwrap());
-        let input = args
-            .input_tap
-            .map(|f| Box::new(std::fs::File::open(&f).unwrap()) as Box<dyn Read>)
-            .unwrap_or(Box::new(std::io::stdin()));
+    let (input, mut output): (Box<dyn Read>, Box<dyn Write>) = if let Some(outputf) = &args.output {
+        let output = Box::new(std::fs::File::create(&outputf).unwrap());
+        let input = if let Some(f) = args.input_tap {
+            eprintln!("Convert from {f:?} to {outputf:?}");
+            Box::new(std::fs::File::open(&f).unwrap()) as Box<dyn Read>
+        } else {
+            eprintln!("Convert from stdin to {outputf:?}");
+            Box::new(std::io::stdin())
+        };
         (input, output)
     } else {
+        eprintln!("Convert from stdin to stdout");
         let output = Box::new(std::io::stdout());
         let input = Box::new(std::io::stdin());
         (input, output)
@@ -38,7 +42,7 @@ fn main() {
     let iterator = tapfile::TapReader::new(input);
 
     for (block, info) in iterator {
-        println!("Block {:?}", info);
+        eprintln!("Block {:?}", info);
         output.write(&block).unwrap();
     }
 }

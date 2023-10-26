@@ -36,10 +36,9 @@ impl<T: Read> Iterator for TapWriter<T> {
             Ok(bytes_read) => {
                 if bytes_read == 0 {
                     let eof = HEADER_EOF.to_le_bytes();
-                    let d = (0..2).map(|_| eof).flatten().collect::<Vec<_>>();
                     self.end_marker = true;
                     Some((
-                        d,
+                        eof.to_vec(),
                         BlockInfo {
                             block_size: 0,
                             block_number: self.current_block,
