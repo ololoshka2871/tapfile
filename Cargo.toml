@@ -1,0 +1,20 @@
+[package]
+name = "tapfile"
+version = "0.1.0"
+edition = "2021"
+authors = ["ololoshka2871"]
+readme = "README.md"
+
+
+[dependencies]
+clap = { version = "4.2", features = ["derive"] }
+byteorder = "1.5"
+
+[lib]
+name = "tapfile"
+
+[[bin]]
+name = "any2tap"
+
+[[bin]]
+name = "tap2any"

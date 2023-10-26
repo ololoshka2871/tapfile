@@ -1,0 +1,27 @@
+{
+    // Используйте IntelliSense, чтобы узнать о возможных атрибутах.
+    // Наведите указатель мыши, чтобы просмотреть описания существующих атрибутов.
+    // Для получения дополнительной информации посетите: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "any2tap",
+            "args": [
+                "README.md", 
+                "README.md.tap",
+            ],
+            "cwd": "${workspaceFolder}",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=any2tap"
+                ],
+                "filter": {
+                    "kind": "bin"
+                }
+            }
+        },
+    ]
+}
