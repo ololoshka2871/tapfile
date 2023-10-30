@@ -1,4 +1,5 @@
-# Конвертор файлов а .tap
+# Конвертор файлов в .tap
+Для работы с [Pertec-Interface-Tape-Controller](https://github.com/ololoshka2871/Pertec-Interface-Tape-Controller)
 
 ## Структура
 Весь файл состоит из блоков следующей структуры:
