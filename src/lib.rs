@@ -11,6 +11,7 @@ pub struct BlockInfo {
     pub is_error: bool,
 }
 
+pub(crate) const TAP_FILEMARK: u32 = 0x0000_0000;
 pub(crate) const HEADER_MASK: u32 = 0x00FF_FFFF;
 pub(crate) const HEADER_EOF: u32 = 0xFFFF_FFFF;
 
@@ -22,7 +23,7 @@ mod test {
 
     #[test]
     fn encode() {
-        let data = vec![1u8; 16];
+        let data = vec![1u8; 20];
 
         let mut iterator = TapWriter::new(Cursor::new(&data), 16);
         assert_eq!(
@@ -39,10 +40,21 @@ mod test {
         assert_eq!(
             iterator.next(),
             Some((
-                vec![0xff; 2 * std::mem::size_of::<u32>()],
+                vec![4, 0, 0, 0, 1, 1, 1, 1, 4, 0, 0, 0],
+                BlockInfo {
+                    block_size: 4,
+                    block_number: 1,
+                    is_error: false
+                }
+            ))
+        );
+        assert_eq!(
+            iterator.next(),
+            Some((
+                vec![0, 0, 0, 0, 0xff, 0xff, 0xff, 0xff],
                 BlockInfo {
                     block_size: 0,
-                    block_number: 1,
+                    block_number: 2,
                     is_error: false
                 }
             ))
@@ -52,7 +64,9 @@ mod test {
 
     #[test]
     fn decode() {
-        let data = vec![8, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 8, 0, 0, 0, 0xff, 0xff, 0xff, 0xff];
+        let data = vec![
+            8, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 8, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0xff, 0xff,
+        ];
 
         let mut iterator = TapReader::new(Cursor::new(&data));
         assert_eq!(
@@ -73,7 +87,7 @@ mod test {
     fn roundtrip() {
         let data = vec![1u8; 65536 * 10];
 
-        let iterator = TapWriter::new(Cursor::new(&data), 65536);
+        let iterator = TapWriter::new(Cursor::new(&data), 4096);
         let encoded = iterator.map(|(e, _f)| e).flatten().collect::<Vec<_>>();
 
         let iterator = TapReader::new(Cursor::new(&encoded));

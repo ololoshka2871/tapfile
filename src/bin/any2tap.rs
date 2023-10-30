@@ -11,7 +11,7 @@ use clap::Parser;
 #[derive(Parser, Debug)]
 struct Cli {
     /// Block size
-    #[clap(short('b'), long, default_value = "65535")]
+    #[clap(short('b'), long, default_value = "8192")]
     block_size: usize,
 
     /// Output file

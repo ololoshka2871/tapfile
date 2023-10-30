@@ -2,7 +2,7 @@ use std::io::{Read, Write};
 
 use byteorder::{LittleEndian, WriteBytesExt};
 
-use crate::{BlockInfo, HEADER_EOF, HEADER_MASK};
+use crate::{BlockInfo, HEADER_EOF, HEADER_MASK, TAP_FILEMARK};
 
 pub struct TapWriter<T> {
     input: T,
@@ -35,10 +35,11 @@ impl<T: Read> Iterator for TapWriter<T> {
         match self.input.read(&mut buf) {
             Ok(bytes_read) => {
                 if bytes_read == 0 {
-                    let eof = HEADER_EOF.to_le_bytes();
+                    let mut d = TAP_FILEMARK.to_le_bytes().to_vec();
+                    d.append(&mut HEADER_EOF.to_le_bytes().to_vec());
                     self.end_marker = true;
                     Some((
-                        eof.to_vec(),
+                        d,
                         BlockInfo {
                             block_size: 0,
                             block_number: self.current_block,

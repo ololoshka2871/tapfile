@@ -1,6 +1,6 @@
 use std::io::Read;
 
-use crate::{BlockInfo, HEADER_EOF, HEADER_MASK};
+use crate::{BlockInfo, HEADER_EOF, HEADER_MASK, TAP_FILEMARK};
 
 pub struct TapReader<T: Read> {
     reader: T,
@@ -33,8 +33,8 @@ impl<T: Read> Iterator for TapReader<T> {
 
         let header1 = u32::from_le_bytes(buf);
 
-        if header1 == HEADER_EOF {
-            // end
+        if header1 == HEADER_EOF || header1 == TAP_FILEMARK {
+            // end or new file (not supported)
             return None;
         }
 
